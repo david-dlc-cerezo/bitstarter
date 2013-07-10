@@ -68,23 +68,6 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     return checkContent($, checksfile);
 };
 
-var checkUrl = function(url, checksfile) {
-    rest.get(url).on('complete', function(result) {
-      if (result instanceof Error) {
-        console.error("Error during download");
-      } 
-      else {
-        $ = cheerio.load(result);
-
-        // TODO change checkings with callbacks 
-        // Quick hack
-        var checkJson = checkContent($, checksfile);
-        var outJson = JSON.stringify(checkJson, null, 4);
-        console.log(outJson);
-      }
-    });
-};
-
 var checkContent = function($, checksfile) {
     var checks = loadChecks(checksfile).sort();
     var out = {};
@@ -109,13 +92,14 @@ if(require.main == module) {
         .parse(process.argv);
             
     if (program.url) { //URL GIVEN
-        checkJson = checkUrl(program.url, program.checks);
+        $ = cheerioUrl(url);
+        var checkJson = checkContent($, checksfile);
     } 
     else { //FILE GIVEN
-        checkJson = checkHtmlFile(program.file, program.checks);
-        var outJson = JSON.stringify(checkJson, null, 4);
-        console.log(outJson);
+        var checkJson = checkHtmlFile(program.file, program.checks);
     }
+    var outJson = JSON.stringify(checkJson, null, 4);
+    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
